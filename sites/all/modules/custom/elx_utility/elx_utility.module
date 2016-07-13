@@ -1,0 +1,107 @@
+<?php
+
+//require_once 'includes/password.inc';
+//require_once 'sites/all/modules/contrib/aes/aes.module';
+//require_once 'includes/database/prefetch.inc';
+
+
+function elx_utility_node_validate($node, $form, &$form_state) {
+  // dpm($node);
+  // if ($node->type=='history' || $node->type=='teaser') {
+  //   if (strlen($node->field_link['und'][0]['url']) && $node->field_video_upload['und'][0]['fid']) {
+  //     form_set_error('field', t('You may either use a link or a video, not both.'));
+  //   }
+  //   elseif (!(strlen($node->field_link['und'][0]['url']) || $node->field_video_upload['und'][0]['fid'])) {
+  //     form_set_error('field', t('You must choose either a link or a video (but not both).'));
+  //   }
+  // }
+}
+
+
+/**
+ * Implements hook_preprocess_html.
+ */
+function elx_utility_preprocess_html(&$variables) {
+// Add conditional stylesheets for admin pages on admin theme.
+  global $user;
+  if ($user->uid) {
+    // reference your current admin theme
+    $theme_path = drupal_get_path('theme', 'seven');
+    // reference your own stylesheet
+    drupal_add_css(drupal_get_path('module', 'elx_utility')
+    . '/admin.css', array('weight' => CSS_THEME));
+    drupal_add_js(drupal_get_path('module', 'elx_utility')
+    . '/admin.js');
+    drupal_add_js(drupal_get_path('module', 'elx_utility')
+    . '/jquery.alphanum.js');
+  }
+}
+
+/**
+ * Random pass generator.
+ */
+function randomPassword() {
+  $alphabet = "abcdefghijkmnopqrstuwxyzABCDEFGHJKMNPQRSTUWXYZ23456789";
+  $pass = array(); //remember to declare $pass as an array
+  $alphaLength = strlen($alphabet) - 1; //put the length -1 in cache
+  for ($i = 0; $i < 8; $i++) {
+    $n = rand(0, $alphaLength);
+    $pass[] = $alphabet[$n];
+  }
+  return implode($pass); //turn the array into a string
+}
+
+/**
+ * Implements hook_feeds_after_save().
+ * Auto-generate user password on user feed import
+ */
+function elx_utility_feeds_after_save(FeedsSource $source, $entity, $item, $entity_id) {
+  if (isset($entity->pass) && $entity->pass == '') {
+    require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
+    $password = randomPassword();
+    $encrypted_data = aes_encrypt($password);
+    watchdog('elx_utility_feeds_after_save', 'New user ' . $entity->uid . ' new password.');
+    $entity->pass = $password;
+    db_insert('aes_passwords')
+      ->fields(array(
+        'uid' => $entity->uid,
+        'pass' => $encrypted_data,
+      ))
+      ->execute();
+    $pass = user_hash_password($password);
+    db_update('users')
+      ->fields(array('pass' => $pass))
+      ->where("uid = :uid", array(
+        ':uid' => $entity->uid,
+      ))
+      ->execute();
+    $account = user_load($entity->uid);
+    drupal_mail('user', 'register_admin_created', $account->mail, $entity->language, array('account' => $account), variable_get('site_mail', 'noreply-myelx@estee.com'));
+  }
+}
+
+/**
+ * Implements hook_clone_node_alter().
+ */
+function elx_utility_clone_node_alter(&$node, $context) {
+  $lang = $node->language;
+  // Empty manifest reference
+  if (isset($node->field_manifest[$lang][0]['target_id'])) {
+    $node->field_manifest[$lang][0]['target_id'] = '';
+  }
+}
+
+/**
+ * Implements hook_feeds_after_parse().
+ */
+function elx_utility_feeds_after_parse(FeedsSource $source, FeedsParserResult $result) {
+  // add space to all field_keys for data_xls import
+  // some field_keys have spaces after parsing and can't alter mapping directly
+  if ($source->importer->id == 'data_xls') {
+    foreach ($result->items as $item_key => $item) {
+      foreach($item as $field_key => $field_val) {
+        $result->items[$item_key][$field_key . ' '] = $field_val;
+      }
+    }
+  }
+}

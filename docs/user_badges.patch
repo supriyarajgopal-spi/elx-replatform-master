@@ -1,0 +1,16 @@
+diff --git a/user_badges.admin.inc b/user_badges.admin.inc
+index 045b6a9..93842f5 100644
+--- a/user_badges.admin.inc
++++ b/user_badges.admin.inc
+@@ -298,9 +298,10 @@ function user_badges_edit_form($form, $form_state, $badge = NULL) {
+     foreach ($images as $path => $image_data) {
+       $options[$path] = $image_data->image;
+     }
++    $options_keys = array_keys($options);
+     $form['general']['imagefromlibrary'] += array(
+       '#type' => 'radios',
+-      '#default_value' => isset($badge->image) && file_valid_uri($badge->image) ? $badge->image : reset(array_keys($options)),
++      '#default_value' => isset($badge->image) && file_valid_uri($badge->image) ? $badge->image : reset($options_keys),
+       '#options' => $options
+     );
+   }

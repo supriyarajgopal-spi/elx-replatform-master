@@ -1,0 +1,25 @@
+File: sites/all/modules/user_badges/user_badges.admin.inc
+
+Modification:
+Applied user_badges.patch to prevent strict warning 'Strict warning: Only variables should be passed by reference in user_badges_edit_form()'
+
+Borrowed from:
+https://www.drupal.org/node/2339515#comment-9153125
+
+Modifier: SUPRIYA RAJGOPAL
+Date: 13Jul16
+------------------------------------------------------------------
+
+File: sites/all/modules/user_badges/user_badges.module
+
+Modification:
+Modified user_badges_menu() to add 'access_callback' & change 'access_arguments' to 'user/%user/badges' menu item
+Created _access_to_badges_tab() to ensure that only users with 'change own badge assignements' permissions sees 'Badges' tab while viewing his/her own profile
+Created & submitted a patch user_badges-not-respecting-change-own-badge-assignments-permission-2765255-3.patch
+
+Borrowed from:
+Self
+
+Modifier: SUPRIYA RAJGOPAL
+Date: 13Jul16
+------------------------------------------------------------------

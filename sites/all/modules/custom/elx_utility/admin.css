@@ -1,0 +1,30 @@
+.node-type-hot-spots .field-name-field-hot-spot-image,
+.page-node-add-hot-spots .field-name-field-hot-spot-image {
+  position: relative;
+}
+.node-type-hot-spots .field-name-field-hot-spot-image #overlay,
+.page-node-add-hot-spots .field-name-field-hot-spot-image #overlay {
+  background: url(/sites/all/themes/elx/images/hot-spot-overlay.png) no-repeat top left;
+  height: 665px;
+  width: 575px;
+  position: absolute;
+}
+
+.select-all {
+  margin-bottom: 20px;
+}
+
+.field-name-field-badge-icon img {
+  height: 125px;
+  width: 125px;
+}
+
+.page-admin-user-export .views-exposed-form select option[value="<"],
+.page-admin-user-export .views-exposed-form select option[value="<="],
+.page-admin-user-export .views-exposed-form select option[value=">"],
+.page-admin-user-export .views-exposed-form select option[value=">="],
+.page-admin-user-export .views-exposed-form select option[value="between"],
+.page-admin-user-export .views-exposed-form select option[value="not between"],
+.page-admin-user-export .views-exposed-form select option[value="regular_expression"] {
+  display: none;
+}
